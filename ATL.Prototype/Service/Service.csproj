@@ -1,0 +1,149 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{8F0D3E9F-D2AE-4EE9-8DBA-6F83CAB2E493}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Service</RootNamespace>
+    <AssemblyName>Service</AssemblyName>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Newtonsoft.Json, Version=4.5.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\Web\MyDLL\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Net.Http, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\Web\MyDLL\System.Net.Http.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Net.Http.Formatting, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\Web\MyDLL\System.Net.Http.Formatting.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Net.Http.WebRequest, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\Web\MyDLL\System.Net.Http.WebRequest.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Web.Http, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\Web\MyDLL\System.Web.Http.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Web.Http.WebHost, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\Web\MyDLL\System.Web.Http.WebHost.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="BaseInfo\APPROVE_FLOW_LISTController.cs" />
+    <Compile Include="BaseInfo\CUSTOMER_CODE_LISTController.cs" />
+    <Compile Include="BaseInfo\EQUIPMENT_CLASS_LISTController.cs" />
+    <Compile Include="BaseInfo\EQUIPMENT_CLASS_PARAM_INFOController.cs" />
+    <Compile Include="BaseInfo\EQUIPMENT_CLASS_PROC_INFOController.cs" />
+    <Compile Include="BaseInfo\EQUIPMENT_LISTController.cs" />
+    <Compile Include="BaseInfo\EQUIPMENT_PARAM_INFOController.cs" />
+    <Compile Include="BaseInfo\EQUIPMENT_PROC_INFOController.cs" />
+    <Compile Include="BaseInfo\EQUIPMENT_TYPE_LISTController.cs" />
+    <Compile Include="BaseInfo\ILLUSTRATION_LISTController.cs" />
+    <Compile Include="BaseInfo\ILLUSTRATION_PARAM_INFOController.cs" />
+    <Compile Include="BaseInfo\MATERIAL_CATEGORY_LISTController.cs" />
+    <Compile Include="BaseInfo\MATERIAL_PARA_INFOController.cs" />
+    <Compile Include="BaseInfo\MATERIAL_PN_LISTController.cs" />
+    <Compile Include="BaseInfo\MATERIAL_PN_PARA_INFOController.cs" />
+    <Compile Include="BaseInfo\MATERIAL_TYPE_GRPController.cs" />
+    <Compile Include="BaseInfo\MATERIAL_TYPE_GRP_LISTController.cs" />
+    <Compile Include="BaseInfo\MATERIAL_TYPE_LISTController.cs" />
+    <Compile Include="BaseInfo\PROCESS_LISTController.cs" />
+    <Compile Include="BaseInfo\FACTORY_LISTController.cs" />
+    <Compile Include="BaseInfo\PARAMETER_LISTController.cs" />
+    <Compile Include="BaseInfo\PARAM_TYPE_LISTController.cs" />
+    <Compile Include="BaseInfo\PROCESS_GROUP_LISTController.cs" />
+    <Compile Include="BaseInfo\PROCESS_MATERIAL_INFOController.cs" />
+    <Compile Include="BaseInfo\PROCESS_MATERIAL_PN_INFOController.cs" />
+    <Compile Include="BaseInfo\PROCESS_PARAM_INFOController.cs" />
+    <Compile Include="BaseInfo\PRODUCT_MODEL_LISTController.cs" />
+    <Compile Include="BaseInfo\PRODUCT_PROC_TYPE_LISTController.cs" />
+    <Compile Include="BaseInfo\PRODUCT_TYPE_LISTController.cs" />
+    <Compile Include="BaseInfo\PROJ_CODE_LISTController.cs" />
+    <Compile Include="BaseInfo\RECIPE_LISTController.cs" />
+    <Compile Include="BaseInfo\RECIPE_TYPE_LISTController.cs" />
+    <Compile Include="Package\PACKAGE_BASE_INFOController.cs" />
+    <Compile Include="Package\PACKAGE_BOM_SPEC_INFOController.cs" />
+    <Compile Include="Package\PACKAGE_DESIGN_INFOController.cs" />
+    <Compile Include="Package\PACKAGE_FLOW_INFOController.cs" />
+    <Compile Include="Package\PACKAGE_GROUPSController.cs" />
+    <Compile Include="Package\PACKAGE_ILLUSTRATION_INFOController.cs" />
+    <Compile Include="Package\PACKAGE_PARAM_SETTINGController.cs" />
+    <Compile Include="Package\PACKAGE_PARAM_SPEC_INFOController.cs" />
+    <Compile Include="Package\PACKAGE_PROC_EQUIP_CLASS_INFOController.cs" />
+    <Compile Include="Package\PACKAGE_PROC_EQUIP_INFOController.cs" />
+    <Compile Include="Package\PACKAGE_PROC_GRPController.cs" />
+    <Compile Include="Package\PACKAGE_PROC_GRP_LISTController.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Package\PACKAGE_PROC_MATERIAL_INFOController.cs" />
+    <Compile Include="Package\PACKAGE_PROC_PN_INFOController.cs" />
+    <Compile Include="Package\PACKAGE_TYPE_LISTController.cs" />
+    <Compile Include="Package\PACKAGE_WF_STEPController.cs" />
+    <Compile Include="Package\PACKAGE_WF_STEP_AUDITORController.cs" />
+    <Compile Include="Package\PreviewController.cs" />
+    <Compile Include="Package\TasksController.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Settings\DepartmentController.cs" />
+    <Compile Include="Settings\MenuController.cs" />
+    <Compile Include="Settings\PMES_TASK_LISTController.cs" />
+    <Compile Include="Settings\PMES_USER_GROUP_INFOController.cs" />
+    <Compile Include="Settings\PMES_USER_GROUP_LISTController.cs" />
+    <Compile Include="Settings\PMES_USER_GRP_TASK_INFOController.cs" />
+    <Compile Include="Settings\PMES_USER_TASK_INFOController.cs" />
+    <Compile Include="Settings\UsersController.cs" />
+    <Compile Include="Settings\WF_SETController.cs" />
+    <Compile Include="Settings\WF_SET_STEPController.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\BLL\BLL.csproj">
+      <Project>{1b5deeff-6a3a-40e1-92ea-53b44c84c1f5}</Project>
+      <Name>BLL</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Model\Model.csproj">
+      <Project>{ec2a7098-9652-4d90-a25f-405502eb41fc}</Project>
+      <Name>Model</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

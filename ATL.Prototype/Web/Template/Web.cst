@@ -1,0 +1,106 @@
+﻿<%@ Template Language="C#" TargetLanguage="HTML"  ResponseEncoding="UTF-8" %>
+<%-- 加载访问数据库的组件SchemaExplorer,并声明其使用的命名空间 --%>
+<%@ Assembly Name="SchemaExplorer"%>
+<%@ Import Namespace="SchemaExplorer"%>
+
+<%@ Property Type="SchemaExplorer.TableSchema" Name="SourceTable" DeepLoad="True" Optional="False" Category="表" Description="" %>
+<%@ Property Name="NameSpace" Type="System.String" Default="" Optional="False" Category="命名空间" Description="" OnChanged="" Editor="" EditorBase="" Serializer="" %>
+<script src="/<%=this.NameSpace%>/<%=this.SourceTable.Name%>.js"></script>
+<div class="easyui-panel" title="查询" style="width: 840px; margin-bottom: 2px; padding: 4px;">
+<%foreach(ColumnSchema col in SourceTable.PrimaryKey.MemberColumns){ %> 
+<%=col.Name%>:<input type="text" id="Search_<%=col.Name%>" />&nbsp;
+<% } %>
+</div>
+<table id="Table_<%=this.SourceTable.Name%>"></table>
+<div id="Dialog_<%=this.SourceTable.Name%>"  class="easyui-dialog" data-options="title:'对话框',modal:false,width:500,height:400,closed:true" style="padding: 10px;">
+    <table cellspacing="0" cellpadding="0">
+        <%foreach(ColumnSchema col in SourceTable.Columns){ %>
+        <tr>
+            <td style="text-align: right;"><%=col.Name%><%if(col.IsPrimaryKeyMember){%><b style="color: red; font-size: 15px;">*</b><%}%></td>
+            <td><input type="text" id="<%=col.Name%>" <%if(this.GetOracleVariableType(col)=="OracleType.Number"){%>  class="easyui-validatebox" data-options="required:false,validType:'number'"  <%}else if(this.GetOracleVariableType(col)=="OracleType.VarChar"){%>  class="easyui-validatebox" data-options="required:false,validType:['maxLength[<%=col.Size/2%>]']" <%}%> /><%if(col.Size!=0){%>(少于<%=col.Size/2%><%=GetNoticeVariableType(col)%>) <%}%></td>
+        </tr>
+        <% } %>
+    </table>
+</div>
+
+<script runat="template">
+public string GetNoticeVariableType(ColumnSchema column)
+{
+ if (column.Name.EndsWith("TypeCode")) return column.Name;
+ 
+ switch (column.DataType)
+ {
+  case DbType.AnsiString: return "个字";
+  case DbType.AnsiStringFixedLength: return "个字";
+  case DbType.Binary: return "byte[]";
+  case DbType.Boolean: return "bool";
+  case DbType.Byte: return "byte";
+  case DbType.Currency: return "decimal";
+  //case DbType.Date: return "DateTime";
+  //case DbType.DateTime: return "DateTime";
+  case DbType.Date: return "个字";
+  case DbType.DateTime: return "日期";
+  case DbType.Decimal: return "位数字";
+  case DbType.Double: return "位数字";
+  case DbType.Guid: return "Guid";
+  case DbType.Int16: return "位数字";
+  case DbType.Int32: return "位数字";
+  case DbType.Int64: return "位数字";
+  case DbType.Object: return "object";
+  case DbType.SByte: return "sbyte";
+  case DbType.Single: return "位数字";
+  case DbType.String: return "个字";
+  case DbType.StringFixedLength: return "个字";
+  case DbType.Time: return "TimeSpan";
+  case DbType.UInt16: return "位数字";
+  case DbType.UInt32: return "位数字";
+  case DbType.UInt64: return "位数字";
+  case DbType.VarNumeric: return "位数字";
+  default:
+  {
+   return "__UNKNOWN__" + column.NativeType;
+  }
+ }
+}
+
+#region 获取列的ORACLE数据类型
+public string GetOracleVariableType(ColumnSchema column)
+{
+ if (column.Name.EndsWith("TypeCode")) return column.Name;
+ 
+ switch (column.DataType)
+ {
+  case DbType.AnsiString: return "OracleType.VarChar";
+  case DbType.AnsiStringFixedLength: return "OracleType.VarChar";
+  case DbType.Binary: return "byte[]";
+  case DbType.Boolean: return "bool";
+  case DbType.Byte: return "byte";
+  case DbType.Currency: return "OracleType.Number";
+  //case DbType.Date: return "DateTime";
+  //case DbType.DateTime: return "DateTime";
+  case DbType.Date: return "OracleType.DateTime";
+  case DbType.DateTime: return "OracleType.DateTime";
+  case DbType.Decimal: return "OracleType.Number";
+  case DbType.Double: return "OracleType.Number";
+  case DbType.Guid: return "Guid";
+  case DbType.Int16: return "OracleType.Number";
+  case DbType.Int32: return "OracleType.Number";
+  case DbType.Int64: return "OracleType.Number";
+  case DbType.Object: return "object";
+  case DbType.SByte: return "sbyte";
+  case DbType.Single: return "OracleType.Number";
+  case DbType.String: return "string";
+  case DbType.StringFixedLength: return "OracleType.VarChar";
+  case DbType.Time: return "OracleType.DateTime";
+  case DbType.UInt16: return "OracleType.Number";
+  case DbType.UInt32: return "OracleType.Number";
+  case DbType.UInt64: return "OracleType.Number";
+  case DbType.VarNumeric: return "OracleType.Number";
+  default:
+  {
+   return "__UNKNOWN__" + column.NativeType;
+  }
+ }
+}
+#endregion
+</script>

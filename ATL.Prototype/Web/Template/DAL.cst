@@ -1,0 +1,320 @@
+﻿<%@ Template Language="C#" TargetLanguage="C#"  ResponseEncoding="UTF-8" %>
+<%-- 加载访问数据库的组件SchemaExplorer,并声明其使用的命名空间 --%>
+<%@ Assembly Name="SchemaExplorer"%>
+<%@ Import Namespace="SchemaExplorer"%>
+
+<%@ Property Name="NameSpace" Type="System.String" Default="" Optional="False" Category="命名空间" Description="" OnChanged="" Editor="" EditorBase="" Serializer="" %>
+
+<%@ Property Type="SchemaExplorer.TableSchema" Name="SourceTable" DeepLoad="True" Optional="False" Category="表" Description="" %>
+
+using DBUtility;
+using Model.<%=this.NameSpace%>;
+using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Data.OracleClient;
+
+namespace DAL.<%=this.NameSpace%>
+{
+    public class <%=this.GetDALClassName()%>
+    {        
+        #region 查询
+        
+        public List<<%=this.GetClassName()%>> GetData()
+        {
+            return OracleHelper.SelectedToIList<<%=this.GetClassName()%>>(PubConstant.ConnectionString, CommandType.Text,            
+            @"
+SELECT
+<%foreach(ColumnSchema col in SourceTable.Columns){ %>
+<%if(col.DataType==DbType.DateTime||col.DataType==DbType.Date){ %>
+        TO_CHAR (<%=col.Name %>, 'MM/DD/YYYY HH24:MI:SS') <%=col.Name %><% if(SourceTable.Columns.IndexOf(col) < SourceTable.Columns.Count - 1){%>,<% } %>
+<% } %>
+<%else { %>
+        <%=col.Name %><% if(SourceTable.Columns.IndexOf(col) < SourceTable.Columns.Count - 1){%>,<% } %>
+        <% } %>
+<% } %>
+FROM <%= this.SourceTable.Name%>
+", null);
+        }
+                        
+        public List<<%=this.GetClassName()%>> GetData(decimal pageSize, decimal pageNumber)
+        {            
+            return OracleHelper.SelectedToIList<<%=this.GetClassName()%>>(PubConstant.ConnectionString, CommandType.Text, 
+            @"
+SELECT  TOTAL, 
+ <%foreach(ColumnSchema col in SourceTable.Columns){ %>
+        <%=col.Name %><% if(SourceTable.Columns.IndexOf(col) < SourceTable.Columns.Count - 1){%>,<% } %>
+<% } %>
+FROM (SELECT
+            T3.TOTAL TOTAL,
+            ROWNUM AS ROWINDEX,
+        <%foreach(ColumnSchema col in SourceTable.Columns){ %>
+            <%=col.Name %><% if(SourceTable.Columns.IndexOf(col) < SourceTable.Columns.Count - 1){%>,<% } %>
+<% } %>
+        FROM (  SELECT 
+<%foreach(ColumnSchema col in SourceTable.Columns){ %>
+                <%if(col.DataType==DbType.DateTime||col.DataType==DbType.Date){ %>
+                    TO_CHAR (<%=col.Name %>, 'MM/DD/YYYY HH24:MI:SS') <%=col.Name %><% if(SourceTable.Columns.IndexOf(col) < SourceTable.Columns.Count - 1){%>,<% } %>
+                 <% } %>
+                <%else { %>
+                    <%=col.Name %><% if(SourceTable.Columns.IndexOf(col) < SourceTable.Columns.Count - 1){%>,<% } %>
+                <% } %>
+            <% } %>  
+                FROM <%= this.SourceTable.Name%> ) T1,          
+            (  SELECT COUNT (1) TOTAL FROM <%= this.SourceTable.Name%> ) T3
+    WHERE ROWNUM <= :PAGE_SIZE * :PAGE_NUMBER) T2
+WHERE T2.ROWINDEX > (:PAGE_NUMBER - 1) * :PAGE_SIZE
+  ", new[]{
+     OracleHelper.MakeInParam("PAGE_SIZE",OracleType.Number,pageSize),
+     OracleHelper.MakeInParam("PAGE_NUMBER",OracleType.Number,pageNumber)
+ });
+        }
+        
+        public List<<%=this.GetClassName()%>> GetDataById(<%foreach(ColumnSchema col in SourceTable.PrimaryKey.MemberColumns){ %> <%=this.GetCSharpVariableType(col)%> <%=col.Name %><% if(SourceTable.PrimaryKey.MemberColumns.IndexOf(col.Name) < SourceTable.PrimaryKey.MemberColumns.Count - 1){%>,<% } %><% } %>,string queryStr)
+        {
+            return OracleHelper.SelectedToIList<<%=this.GetClassName()%>>(PubConstant.ConnectionString, CommandType.Text, @"
+SELECT
+<%foreach(ColumnSchema col in SourceTable.Columns){ %>
+<%if(col.DataType==DbType.DateTime||col.DataType==DbType.Date){ %>
+        TO_CHAR (<%=col.Name %>, 'MM/DD/YYYY HH24:MI:SS') <%=col.Name %><% if(SourceTable.Columns.IndexOf(col) < SourceTable.Columns.Count - 1){%>,<% } %>
+<% } %>
+<%else { %>
+        <%=col.Name %><% if(SourceTable.Columns.IndexOf(col) < SourceTable.Columns.Count - 1){%>,<% } %>
+        <% } %>
+<% } %>
+FROM <%= this.SourceTable.Name%>
+WHERE <%foreach(ColumnSchema col in SourceTable.PrimaryKey.MemberColumns){ %><%=col.Name %>=:<%=col.Name%><% if(SourceTable.PrimaryKey.MemberColumns.IndexOf(col.Name) < SourceTable.PrimaryKey.MemberColumns.Count - 1){%> 
+    AND <% } %><% } %> 
+" +queryStr,  new[]{
+    <%foreach(ColumnSchema col in SourceTable.PrimaryKey.MemberColumns){ %>    
+        <%if(col.DataType==DbType.DateTime||col.DataType==DbType.Date){ %>
+            OracleHelper.MakeInParam("<%=col.Name %>",<%=this.GetOracleVariableType(col)%>,<%=col.Size/2 %>,string.IsNullOrEmpty(entity.<%=col.Name %>)?DateTime.Now: DateTime.ParseExact(entity.<%=col.Name %>,"MM/dd/yyyy HH:mm:ss",System.Globalization.CultureInfo.InvariantCulture))<% if(SourceTable.PrimaryKey.MemberColumns.IndexOf(col.Name) < SourceTable.PrimaryKey.MemberColumns.Count - 1){%>,<% } %>
+        <% } %>
+        <%else{ %>           
+            OracleHelper.MakeInParam("<%=col.Name %>",<%=this.GetOracleVariableType(col)%>,<%=col.Size/2 %>,<%=col.Name %>)<% if(SourceTable.PrimaryKey.MemberColumns.IndexOf(col.Name) < SourceTable.PrimaryKey.MemberColumns.Count - 1){%>,<% } %>
+        <% } %>
+    <% } %>   
+            });
+        }
+        
+        public bool GetDataValidateId(<%foreach(ColumnSchema col in SourceTable.PrimaryKey.MemberColumns){ %> <%=this.GetCSharpVariableType(col)%> <%=col.Name %><% if(SourceTable.PrimaryKey.MemberColumns.IndexOf(col.Name) < SourceTable.PrimaryKey.MemberColumns.Count - 1){%>,<% } %><% } %>)
+        {
+            return 1 == Convert.ToInt32(OracleHelper.ExecuteScalar(PubConstant.ConnectionString, CommandType.Text, @"
+SELECT  COUNT(1)
+FROM <%= this.SourceTable.Name%>
+WHERE <%foreach(ColumnSchema col in SourceTable.PrimaryKey.MemberColumns){ %><%=col.Name %>=:<%=col.Name%><% if(SourceTable.PrimaryKey.MemberColumns.IndexOf(col.Name) < SourceTable.PrimaryKey.MemberColumns.Count - 1){%> 
+    AND <% } %><% } %>
+",  new[]{
+    <%foreach(ColumnSchema col in SourceTable.PrimaryKey.MemberColumns){ %>    
+        <%if(col.DataType==DbType.DateTime||col.DataType==DbType.Date){ %>
+            OracleHelper.MakeInParam("<%=col.Name %>",<%=this.GetOracleVariableType(col)%>,<%=col.Size/2 %>,string.IsNullOrEmpty(entity.<%=col.Name %>)?DateTime.Now: DateTime.ParseExact(entity.<%=col.Name %>,"MM/dd/yyyy HH:mm:ss",System.Globalization.CultureInfo.InvariantCulture))<% if(SourceTable.PrimaryKey.MemberColumns.IndexOf(col.Name) < SourceTable.PrimaryKey.MemberColumns.Count - 1){%>,<% } %>
+        <% } %>
+        <%else{ %>           
+            OracleHelper.MakeInParam("<%=col.Name %>",<%=this.GetOracleVariableType(col)%>,<%=col.Size/2 %>,<%=col.Name %>)<% if(SourceTable.PrimaryKey.MemberColumns.IndexOf(col.Name) < SourceTable.PrimaryKey.MemberColumns.Count - 1){%>,<% } %>
+        <% } %>
+    <% } %>   
+            }));
+        }
+        
+        #endregion
+        
+        #region 新增
+         
+        public int PostAdd(<%=this.GetClassName()%> entity)
+        { 
+            #region 检查重复
+            bool exist = Convert.ToDecimal(
+                OracleHelper.ExecuteScalar(
+                PubConstant.ConnectionString,
+                CommandType.Text,
+                @"
+SELECT COUNT (1)
+  FROM <%= this.SourceTable.Name%>
+ WHERE <%foreach(ColumnSchema col in SourceTable.PrimaryKey.MemberColumns){ %><%=col.Name %>=:<%=col.Name%><% if(SourceTable.PrimaryKey.MemberColumns.IndexOf(col.Name) < SourceTable.PrimaryKey.MemberColumns.Count - 1){%> AND <% } %><% } %>
+",
+                new[]{
+                    <%foreach(ColumnSchema col in SourceTable.PrimaryKey.MemberColumns){ %>
+                    OracleHelper.MakeInParam("<%=col.Name%>",<%=this.GetOracleVariableType(col)%>,<%=col.Size/2 %>,entity.<%=col.Name %>)<% if(SourceTable.PrimaryKey.MemberColumns.IndexOf(col.Name) < SourceTable.PrimaryKey.MemberColumns.Count - 1){%>,<% } %>
+                    <% } %>
+                })
+                ) > 0;
+            if (exist)
+            {
+                return 0;
+            }
+            #endregion
+            return OracleHelper.ExecuteNonQuery(PubConstant.ConnectionString, CommandType.Text,
+                @"
+INSERT INTO <%= this.SourceTable.Name%> (
+<%foreach(ColumnSchema col in SourceTable.Columns){ %>
+        <%=col.Name %><% if(SourceTable.Columns.IndexOf(col) < SourceTable.Columns.Count - 1){%>,<% } %>
+<% } %>)
+VALUES (
+     <%foreach(ColumnSchema col in SourceTable.Columns){ %>
+        :<%=col.Name %><% if(SourceTable.Columns.IndexOf(col) < SourceTable.Columns.Count - 1){%>,<% } %>
+<% } %>)
+", new[]{
+    <%foreach(ColumnSchema col in SourceTable.Columns){ %>
+        <%if(col.DataType==DbType.DateTime||col.DataType==DbType.Date){ %>
+            OracleHelper.MakeInParam("<%=col.Name %>",<%=this.GetOracleVariableType(col)%>,<%=col.Size/2 %>,string.IsNullOrEmpty(entity.<%=col.Name %>)?DateTime.Now: DateTime.ParseExact(entity.<%=col.Name %>,"MM/dd/yyyy HH:mm:ss",System.Globalization.CultureInfo.InvariantCulture))<% if(SourceTable.Columns.IndexOf(col) < SourceTable.Columns.Count - 1){%>,<%}%>
+        <% } %>
+        <%else{ %>
+            OracleHelper.MakeInParam("<%=col.Name %>",<%=this.GetOracleVariableType(col)%>,<%=col.Size/2 %>,entity.<%=col.Name %>)<% if(SourceTable.Columns.IndexOf(col) < SourceTable.Columns.Count - 1){%>,<% } %>
+        <% } %>    
+    <% } %>     
+        });
+    }
+   
+        #endregion
+    
+        #region 修改
+        
+        public int PostEdit(<%=this.GetClassName()%> entity)
+        {
+            return OracleHelper.ExecuteNonQuery(PubConstant.ConnectionString, CommandType.Text,
+                @"
+UPDATE <%= this.SourceTable.Name%> SET 
+<%foreach(ColumnSchema col in SourceTable.NonPrimaryKeyColumns){ %>
+    <%=col.Name %>=:<%=col.Name %><% if(SourceTable.NonPrimaryKeyColumns.IndexOf(col) < SourceTable.NonPrimaryKeyColumns.Count - 1){%>,<% } %>
+<% } %>
+ WHERE <%foreach(ColumnSchema col in SourceTable.PrimaryKey.MemberColumns){ %>
+        <%=col.Name %>=:<%=col.Name%><% if(SourceTable.PrimaryKey.MemberColumns.IndexOf(col.Name) < SourceTable.PrimaryKey.MemberColumns.Count - 1){%> AND <% } %> <% } %>
+", new[]{
+    <%foreach(ColumnSchema col in SourceTable.Columns){ %>
+        <%if(col.DataType==DbType.DateTime||col.DataType==DbType.Date){ %>
+            OracleHelper.MakeInParam("<%=col.Name %>",<%=this.GetOracleVariableType(col)%>,<%=col.Size/2 %>,string.IsNullOrEmpty(entity.<%=col.Name %>)?DateTime.Now: DateTime.ParseExact(entity.<%=col.Name %>,"MM/dd/yyyy HH:mm:ss",System.Globalization.CultureInfo.InvariantCulture))<% if(SourceTable.Columns.IndexOf(col) < SourceTable.Columns.Count - 1){%>,<% } %>
+        <% } %>
+        <%else{ %>
+            OracleHelper.MakeInParam("<%=col.Name %>",<%=this.GetOracleVariableType(col)%>,<%=col.Size/2 %>,entity.<%=col.Name %>)<% if(SourceTable.Columns.IndexOf(col) < SourceTable.Columns.Count - 1){%>,<% } %>
+        <% } %>   
+    <% } %>     
+            });
+        }
+    
+        #endregion
+        
+        #region 删除       
+        public int PostDelete(<%=this.GetClassName()%> entity)
+        { 
+            return OracleHelper.ExecuteNonQuery(PubConstant.ConnectionString, CommandType.Text,
+@"
+DELETE FROM <%= this.SourceTable.Name%> 
+WHERE
+    <%foreach(ColumnSchema col in SourceTable.PrimaryKey.MemberColumns){ %>
+    <%=col.Name %>=:<%=col.Name%><% if(SourceTable.PrimaryKey.MemberColumns.IndexOf(col.Name) < SourceTable.PrimaryKey.MemberColumns.Count - 1){%> AND <% } %>
+    <% } %>
+", new[]{
+    <%foreach(ColumnSchema col in SourceTable.PrimaryKey.MemberColumns){ %>    
+        <%if(col.DataType==DbType.DateTime||col.DataType==DbType.Date){ %>
+            OracleHelper.MakeInParam("<%=col.Name %>",<%=this.GetOracleVariableType(col)%>,<%=col.Size/2 %>,string.IsNullOrEmpty(entity.<%=col.Name %>)?DateTime.Now: DateTime.ParseExact(entity.<%=col.Name %>,"MM/dd/yyyy HH:mm:ss",System.Globalization.CultureInfo.InvariantCulture))<% if(SourceTable.PrimaryKey.MemberColumns.IndexOf(col.Name) < SourceTable.PrimaryKey.MemberColumns.Count - 1){%>,<% } %>
+        <% } %>
+        <%else{ %>           
+            OracleHelper.MakeInParam("<%=col.Name %>",<%=this.GetOracleVariableType(col)%>,<%=col.Size/2 %>,entity.<%=col.Name %>)<% if(SourceTable.PrimaryKey.MemberColumns.IndexOf(col.Name) < SourceTable.PrimaryKey.MemberColumns.Count - 1){%>,<% } %>
+        <% } %>
+    <% } %>   
+            });
+        }
+    
+        #endregion
+    
+    
+    
+   }
+}
+<script runat="template">
+#region 获取数据访问类类名
+public string GetDALClassName()
+{ 
+ return this.SourceTable.Name;
+}
+#endregion
+        
+#region 获取实体类类名
+public string GetClassName()
+{ 
+ return this.SourceTable.Name+"_Entity";
+}
+#endregion
+
+#region 获取列的数据类型
+public string GetCSharpVariableType(ColumnSchema column)
+{
+ if (column.Name.EndsWith("TypeCode")) return column.Name;
+ 
+ switch (column.DataType)
+ {
+  case DbType.AnsiString: return "string";
+  case DbType.AnsiStringFixedLength: return "string";
+  case DbType.Binary: return "byte[]";
+  case DbType.Boolean: return "bool";
+  case DbType.Byte: return "byte";
+  case DbType.Currency: return "decimal";
+  //case DbType.Date: return "DateTime";
+  //case DbType.DateTime: return "DateTime";
+  case DbType.Date: return "string";
+  case DbType.DateTime: return "string";
+  case DbType.Decimal: return "decimal";
+  case DbType.Double: return "double";
+  case DbType.Guid: return "Guid";
+  case DbType.Int16: return "short";
+  case DbType.Int32: return "int";
+  case DbType.Int64: return "long";
+  case DbType.Object: return "object";
+  case DbType.SByte: return "sbyte";
+  case DbType.Single: return "float";
+  case DbType.String: return "string";
+  case DbType.StringFixedLength: return "string";
+  case DbType.Time: return "TimeSpan";
+  case DbType.UInt16: return "ushort";
+  case DbType.UInt32: return "uint";
+  case DbType.UInt64: return "ulong";
+  case DbType.VarNumeric: return "decimal";
+  default:
+  {
+   return "__UNKNOWN__" + column.NativeType;
+  }
+ }
+}
+#endregion
+
+#region 获取列的ORACLE数据类型
+public string GetOracleVariableType(ColumnSchema column)
+{
+ if (column.Name.EndsWith("TypeCode")) return column.Name;
+ 
+ switch (column.DataType)
+ {
+  case DbType.AnsiString: return "OracleType.VarChar";
+  case DbType.AnsiStringFixedLength: return "OracleType.VarChar";
+  case DbType.Binary: return "byte[]";
+  case DbType.Boolean: return "bool";
+  case DbType.Byte: return "byte";
+  case DbType.Currency: return "OracleType.Number";
+  //case DbType.Date: return "DateTime";
+  //case DbType.DateTime: return "DateTime";
+  case DbType.Date: return "OracleType.DateTime";
+  case DbType.DateTime: return "OracleType.DateTime";
+  case DbType.Decimal: return "OracleType.Number";
+  case DbType.Double: return "OracleType.Number";
+  case DbType.Guid: return "Guid";
+  case DbType.Int16: return "OracleType.Number";
+  case DbType.Int32: return "OracleType.Number";
+  case DbType.Int64: return "OracleType.Number";
+  case DbType.Object: return "object";
+  case DbType.SByte: return "sbyte";
+  case DbType.Single: return "OracleType.Number";  
+  case DbType.String: return "OracleType.VarChar";
+  case DbType.StringFixedLength: return "OracleType.VarChar";
+  case DbType.Time: return "OracleType.DateTime";
+  case DbType.UInt16: return "OracleType.Number";
+  case DbType.UInt32: return "OracleType.Number";
+  case DbType.UInt64: return "OracleType.Number";
+  case DbType.VarNumeric: return "OracleType.Number";
+  default:
+  {
+   return "__UNKNOWN__" + column.NativeType;
+  }
+ }
+}
+#endregion
+</script>

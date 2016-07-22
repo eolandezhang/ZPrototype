@@ -1,0 +1,545 @@
+﻿<%@ Template Language="C#" TargetLanguage="JavaScript"  ResponseEncoding="UTF-8" %>
+<%-- 加载访问数据库的组件SchemaExplorer,并声明其使用的命名空间 --%>
+<%@ Assembly Name="SchemaExplorer"%>
+<%@ Import Namespace="SchemaExplorer"%>
+
+<%@ Property Type="SchemaExplorer.TableSchema" Name="SourceTable" DeepLoad="True" Optional="False" Category="表" Description="" %>
+var pageSize = 20;
+var editIndex_<%=this.SourceTable.Name%> = undefined;
+var addOrEdit_<%=this.SourceTable.Name%> = null;
+$(function () {    
+    Table_<%=this.SourceTable.Name%>_();
+    Init_Table_<%=this.SourceTable.Name%>_();
+    //Table_<%=this.SourceTable.Name%>(1,pageSize)
+    //Init_Table_<%=this.SourceTable.Name%>(1,pageSize);   
+    Dialog_<%=this.SourceTable.Name%>();    
+});
+//不分页
+function Table_<%=this.SourceTable.Name%>_() {    
+    $('#Table_<%=this.SourceTable.Name%>').datagrid({
+        title: '<%=this.SourceTable.Name%>',
+        singleSelect: true, 
+        width: '840',
+        height: 'auto',
+        fitColumns: false,        
+        toolbar: [{
+            text: '新增',
+            iconCls: 'icon-add',
+            handler: function () {                
+                addOrEdit_<%=this.SourceTable.Name%> = 'add';   
+                <%foreach(ColumnSchema col in SourceTable.Columns){ %>
+                $('#<%=col.Name%>').val('').attr('readonly',false);
+                <% } %>
+                $('#UPDATE_USER').attr('readonly',true);
+                $('#UPDATE_DATE').attr('readonly',true);
+                $('#Dialog_<%=this.SourceTable.Name%>').dialog('open');
+            }
+        }, {
+            text: '修改',
+            iconCls: 'icon-edit',
+            handler: function () {
+                addOrEdit_<%=this.SourceTable.Name%> = 'edit';
+                var x = $('#Table_<%=this.SourceTable.Name%>').datagrid('getSelected');
+                if (x == null) return;                
+                <%foreach(ColumnSchema col in SourceTable.Columns){ %>
+                $('#<%=col.Name%>').val(x.<%=col.Name%>)<%if(col.IsPrimaryKeyMember){%>.attr('readonly',true)<% } %>;   
+                <% } %>                
+                $('#UPDATE_USER').attr('readonly',true);
+                $('#UPDATE_DATE').attr('readonly',true);
+                $('#Dialog_<%=this.SourceTable.Name%>').dialog('open');
+            }
+        }, {
+            text: '删除',
+            iconCls: 'icon-cancel',
+            handler: function () {
+                Deleterow_<%=this.SourceTable.Name%>();
+            }
+        }, {
+            text: '保存',
+            iconCls: 'icon-save',
+            handler: function () {
+                $('#Table_<%=this.SourceTable.Name%>').datagrid('endEdit', editIndex_<%=this.SourceTable.Name%>);
+                var changedRow = $('#Table_<%=this.SourceTable.Name%>').datagrid('getChanges');
+                if (changedRow.length > 0) {
+                    for (var i = 0; i < changedRow.length; i++) {
+                        Edit_Cell_<%=this.SourceTable.Name%>(changedRow[i]);
+                    }
+                }
+                editIndex_<%=this.SourceTable.Name%> = undefined;
+                $('#Table_<%=this.SourceTable.Name%>').datagrid('acceptChanges');
+            }
+        }, {
+            text: '取消',
+            iconCls: 'icon-undo',
+            handler: function () {
+                $('#Table_<%=this.SourceTable.Name%>').datagrid('rejectChanges');
+            }
+        }],        
+        frozenColumns: [[           
+            <%foreach(ColumnSchema col in SourceTable.PrimaryKey.MemberColumns){ %>
+            { field: '<%=col.Name%>', title: '<%=col.Name%>', align: 'left',styler:function(value,row,index){return 'color:blue';}}<% if(SourceTable.PrimaryKey.MemberColumns.IndexOf(col.Name) < SourceTable.PrimaryKey.MemberColumns.Count - 1){%>,<% } %>             
+            <% } %>
+            ]],
+        columns: [[
+            <%foreach(ColumnSchema col in SourceTable.NonPrimaryKeyColumns){ %>            
+            { field: '<%=col.Name%>', title: '<%=col.Name%>', align: 'left'<% if(col.Name.Equals("UPDATE_USER")||col.Name.Equals("UPDATE_DATE")){%><% }else if(col.Name.Equals("VALID_FLAG")){%>,editor: { type: 'checkbox', options: { on: '1', off: '0' } }<% }else{%>,editor: 'text'<%}%>}<% if(SourceTable.NonPrimaryKeyColumns.IndexOf(col) < SourceTable.NonPrimaryKeyColumns.Count - 1){%>,<%}%>
+            <% } %>
+                       
+            //下拉列表范例：
+            //editor: {
+            //            type: 'combobox',
+            //            options: {
+            //                valueField: 'FACTORY_ID',
+            //                textField: 'FACTORY_NAME',
+            //                url: '/api/FACTORY_LIST/GetData',
+            //                method: 'get',
+            //                required: false
+            //            }
+            //        }
+            
+            //选择框
+            //editor: { type: 'checkbox', options: { on: '1', off: '0' } }
+            
+            //editor: {
+            //        type: 'validatebox',
+            //        options: {
+            //            required: false,
+            //            validType: ['maxLength[10]']//'number'
+            //        }
+            //    }
+            
+            //formatter: function (value,row,index) {
+             //      switch (value) {
+             //           case '0':
+             //               return '';
+             //           case '1':
+             //               return '是';
+             //       }
+             //   }
+        ]],
+        onClickRow: function (rowIndex, rowData) {            
+            editrow_<%=this.SourceTable.Name%>(rowIndex);
+        },
+        onDblClickRow: function (rowIndex, rowData) {},
+        rowStyler: function (index, row) {},
+        onBeforeEdit: function (index, row) {
+            editIndex_<%=this.SourceTable.Name%> = index;
+            row.editing = true;
+            $('#Table_<%=this.SourceTable.Name%>').datagrid('refreshRow', index);            
+        },
+        onAfterEdit: function (index, row) {
+            row.editing = false;
+            $('#Table_<%=this.SourceTable.Name%>').datagrid('refreshRow', index);            
+        },
+        onCancelEdit: function (index, row) {
+            row.editing = false;
+            $('#Table_<%=this.SourceTable.Name%>').datagrid('refreshRow', index);            
+        },
+        onRowContextMenu: function (e, rowIndex, rowData) {
+            e.preventDefault();
+        }
+    });   
+}
+function Init_Table_<%=this.SourceTable.Name%>_() {
+    var j={};
+    $.ajax({
+        type: 'get',
+        url: '/api/<%=this.SourceTable.Name%>/GetData',
+        data: j,
+        dataType: 'json',
+        success: function (data) {        
+            $('#Table_<%=this.SourceTable.Name%>').datagrid("loadData",data).datagrid('acceptChanges');
+        }
+    });
+}
+//分页
+function Table_<%=this.SourceTable.Name%>(pageNumber,pageSize) {    
+    $('#Table_<%=this.SourceTable.Name%>').datagrid({
+        title: '<%=this.SourceTable.Name%>',
+        singleSelect: true, 
+        width: '840',
+        height: 'auto',
+        fitColumns: false,        
+        toolbar: [{
+            text: '新增',
+            iconCls: 'icon-add',
+            handler: function () {                
+                addOrEdit_<%=this.SourceTable.Name%> = 'add';   
+                <%foreach(ColumnSchema col in SourceTable.Columns){ %>
+                $('#<%=col.Name%>').val('').attr('readonly',false);
+                <% } %>
+                $('#UPDATE_USER').attr('readonly',true);
+                $('#UPDATE_DATE').attr('readonly',true);
+                $('#Dialog_<%=this.SourceTable.Name%>').dialog('open');
+            }
+        }, {
+            text: '修改',
+            iconCls: 'icon-edit',
+            handler: function () {
+                addOrEdit_<%=this.SourceTable.Name%> = 'edit';
+                var x = $('#Table_<%=this.SourceTable.Name%>').datagrid('getSelected');
+                if (x == null) return;               
+                <%foreach(ColumnSchema col in SourceTable.Columns){ %>
+                $('#<%=col.Name%>').val(x.<%=col.Name%>)<%if(col.IsPrimaryKeyMember){%>.attr('readonly',true)<% } %>;   
+                <% } %>                
+                $('#UPDATE_USER').attr('readonly',true);
+                $('#UPDATE_DATE').attr('readonly',true);
+                $('#Dialog_<%=this.SourceTable.Name%>').dialog('open');
+            }
+        }, {
+            text: '删除',
+            iconCls: 'icon-cancel',
+            handler: function () {
+                Deleterow_<%=this.SourceTable.Name%>();
+            }
+        }, {
+            text: '保存',
+            iconCls: 'icon-save',
+            handler: function () {
+                $('#Table_<%=this.SourceTable.Name%>').datagrid('endEdit', editIndex_<%=this.SourceTable.Name%>);
+                var changedRow = $('#Table_<%=this.SourceTable.Name%>').datagrid('getChanges');
+                if (changedRow.length > 0) {
+                    for (var i = 0; i < changedRow.length; i++) {
+                        Edit_Cell_<%=this.SourceTable.Name%>(changedRow[i]);
+                    }
+                }
+                editIndex_<%=this.SourceTable.Name%> = undefined;
+                $('#Table_<%=this.SourceTable.Name%>').datagrid('clearSelections');
+            }
+        }, {
+            text: '取消',
+            iconCls: 'icon-undo',
+            handler: function () {
+                $('#Table_<%=this.SourceTable.Name%>').datagrid('rejectChanges');
+            }
+        }],
+        rownumbers: true,     
+        pagination: true, 
+        pageNumber: pageNumber, 
+        pageSize: pageSize, 
+        pageList: [pageSize, pageSize*2, pageSize*3], 
+        method: 'get', 
+        //sortName: 'USER_NUM', //单页排序的列
+        //sortOrder: 'asc', //升序
+        //remoteSort: false, //使用客户端排序
+        showFooter: false,
+        //idField: 'USER_NAME',
+        frozenColumns: [[           
+            <%foreach(ColumnSchema col in SourceTable.PrimaryKey.MemberColumns){ %>
+            { field: '<%=col.Name%>', title: '<%=col.Name%>', align: 'left',styler:function(value,row,index){return 'color:blue';}}<% if(SourceTable.PrimaryKey.MemberColumns.IndexOf(col.Name) < SourceTable.PrimaryKey.MemberColumns.Count - 1){%>,<% } %>             
+            <% } %>
+            ]],
+        columns: [[
+            <%foreach(ColumnSchema col in SourceTable.NonPrimaryKeyColumns){ %>            
+            { field: '<%=col.Name%>', title: '<%=col.Name%>', align: 'left'<% if(col.Name.Equals("UPDATE_USER")||col.Name.Equals("UPDATE_DATE")){%><% }else if(col.Name.Equals("VALID_FLAG")){%>,editor: { type: 'checkbox', options: { on: '1', off: '0' } }<% }else{%>,editor: 'text'<%}%>}<% if(SourceTable.NonPrimaryKeyColumns.IndexOf(col) < SourceTable.NonPrimaryKeyColumns.Count - 1){%>,<%}%>
+            <% } %>
+                       
+            //下拉列表范例：
+            //editor: {
+            //            type: 'combobox',
+            //            options: {
+            //                valueField: 'FACTORY_ID',
+            //                textField: 'FACTORY_NAME',
+            //                url: '/api/FACTORY_LIST/GetData',
+            //                method: 'get',
+            //                required: false
+            //            }
+            //        }
+            
+            //选择框
+            //editor: { type: 'checkbox', options: { on: '1', off: '0' } }
+            
+            //editor: {
+            //        type: 'validatebox',
+            //        options: {
+            //            required: false,
+            //            validType: ['maxLength[10]']//'number'
+            //        }
+            //    }
+            
+            //formatter: function (value,row,index) {
+             //      switch (value) {
+             //           case '0':
+             //               return '';
+             //           case '1':
+             //               return '是';
+             //       }
+             //   }
+        ]],
+        onClickRow: function (rowIndex, rowData) {            
+            editrow_<%=this.SourceTable.Name%>(rowIndex);
+        },
+        onDblClickRow: function (rowIndex, rowData) {},
+        rowStyler: function (index, row) {},
+        onBeforeEdit: function (index, row) {
+            editIndex_<%=this.SourceTable.Name%> = index;
+            row.editing = true;
+            $('#Table_<%=this.SourceTable.Name%>').datagrid('refreshRow', index);            
+        },
+        onAfterEdit: function (index, row) {
+            row.editing = false;
+            $('#Table_<%=this.SourceTable.Name%>').datagrid('refreshRow', index);            
+        },
+        onCancelEdit: function (index, row) {
+            row.editing = false;
+            $('#Table_<%=this.SourceTable.Name%>').datagrid('refreshRow', index);            
+        },
+        onRowContextMenu: function (e, rowIndex, rowData) {
+            e.preventDefault();
+        }
+    });   
+    var pg = $('#Table_<%=this.SourceTable.Name%>').datagrid("getPager");
+    if (pg) {
+        $(pg).pagination({
+            onSelectPage: function (pageNumber, pageSize) {
+                Init_Table_<%=this.SourceTable.Name%>(pageNumber,pageSize); //翻页的关键点
+            }
+        });
+    }
+}
+function Init_Table_<%=this.SourceTable.Name%>(pageNumber,pageSize) {
+    $.ajax({
+        type: 'get',
+        url: '/api/<%=this.SourceTable.Name%>/GetDataPage',
+        data: { 'pageSize': pageSize, 'pageNumber': pageNumber },
+        dataType: 'json',
+        success: function (data) {            
+            if (data.length != 0) {
+                var str = { total: data[0].TOTAL, rows: data };
+            } else {
+                var str = { total: 0, rows: data };
+            }
+             $('#Table_<%=this.SourceTable.Name%>').datagrid("loadData",str).datagrid('acceptChanges');
+        }
+    });
+}
+
+function editrow_<%=this.SourceTable.Name%>(index) {    
+    if (editIndex_<%=this.SourceTable.Name%> != undefined)
+        $('#Table_<%=this.SourceTable.Name%>').datagrid('endEdit', editIndex_<%=this.SourceTable.Name%>);
+    $('#Table_<%=this.SourceTable.Name%>').datagrid('beginEdit', index).datagrid('selectRow', index);
+}
+function Deleterow_<%=this.SourceTable.Name%>() {
+    var row = $('#Table_<%=this.SourceTable.Name%>').datagrid('getSelected');    
+    if (row == null) {   
+        $.messager.show({
+            title: '消息',
+            msg: '请选择',
+            showType: 'show'
+        });
+        return;
+    }
+    $.messager.confirm('确认', '是否真的删除?', function (r) {
+        if (r) {
+            Delete_<%=this.SourceTable.Name%>(row);           
+        }
+    });
+}
+function Dialog_<%=this.SourceTable.Name%>() {
+    $('#Dialog_<%=this.SourceTable.Name%>').dialog({ 
+        toolbar: [{
+            text: '保存',
+            iconCls: 'icon-save',
+            handler: function () {
+                if (addOrEdit_<%=this.SourceTable.Name%> == 'add') {
+                    Add_<%=this.SourceTable.Name%>();
+                }
+                else if (addOrEdit_<%=this.SourceTable.Name%> == 'edit') {
+                    Edit_<%=this.SourceTable.Name%>();
+                }
+            }      
+        }]
+    });
+}
+function Validate_<%=this.SourceTable.Name%>() {
+    if (!(
+        <%foreach(ColumnSchema col in SourceTable.Columns){ %>
+        $('#<%=col.Name%>').validatebox('isValid')<% if(SourceTable.Columns.IndexOf(col) < SourceTable.Columns.Count - 1){%>&&<% } %>
+        <%} %>        
+        )) {
+        $.messager.show({
+            title: '消息',
+            msg: '输入不正确',
+            showType: 'show'
+        });
+        return false;
+    }    
+    return true;
+}
+function Add_<%=this.SourceTable.Name%>() {
+    //if (!Validate_<%=this.SourceTable.Name%>()) {
+    //    return;
+    //}
+    if (<%foreach(ColumnSchema col in SourceTable.PrimaryKey.MemberColumns){ %>$('#<%=col.Name%>').val()==''<% if(SourceTable.PrimaryKey.MemberColumns.IndexOf(col.Name) < SourceTable.PrimaryKey.MemberColumns.Count - 1){%>&&<% } %><% } %>)
+    {
+        $.messager.show({
+            title: '消息',
+            msg: '请填写',
+            showType: 'show'
+        });
+        return;
+    }    
+    var j = {<%foreach(ColumnSchema col in SourceTable.Columns){ %>
+            '<%=col.Name%>':$('#<%=col.Name%>').val()<% if(SourceTable.Columns.IndexOf(col) < SourceTable.Columns.Count - 1){%>,<% } %><% } %>        
+    };
+    $.ajax({
+        type: 'post',
+        url: '/api/<%=this.SourceTable.Name%>/PostAdd',
+        data: JSON.stringify(j),
+        dataType: 'json',
+        contentType: 'application/json',
+        success: function (data) {
+            if (data > 0) {
+                $.messager.show({
+                    title: '消息',
+                    msg: '成功',
+                    showType: 'show'
+                });
+                Init_Table_<%=this.SourceTable.Name%>_();
+                //Init_Table_<%=this.SourceTable.Name%>(1,pageSize);
+                $('#Dialog_<%=this.SourceTable.Name%>').dialog('close');
+            } else {
+                $.messager.show({
+                    title: '消息',
+                    msg: '失败',
+                    showType: 'show'
+                });
+            }
+        }
+    });
+}
+function Edit_<%=this.SourceTable.Name%>() {  
+    //if (!Validate_<%=this.SourceTable.Name%>()) {
+    //    return;
+    //}
+   var x = $('#Table_<%=this.SourceTable.Name%>').datagrid('getSelected');
+   if( x==null ) return;
+   
+    var j = {<%foreach(ColumnSchema col in SourceTable.Columns){ %>        
+            '<%=col.Name%>':x.<%=col.Name%><% if(SourceTable.Columns.IndexOf(col) < SourceTable.Columns.Count - 1){%>,<% } %><% } %>        
+    };
+    $.ajax({
+        type: 'post',
+        url: '/api/<%=this.SourceTable.Name%>/PostEdit',
+        data: JSON.stringify(j),
+        dataType: 'json',
+        contentType: 'application/json',
+        success: function (data) {
+            if (data > 0) {
+                $.messager.show({
+                    title: '消息',
+                    msg: '成功',
+                    showType: 'show'
+                });
+                Init_Table_<%=this.SourceTable.Name%>_();
+                //Init_Table_<%=this.SourceTable.Name%>(1,pageSize);
+                $('#Dialog_<%=this.SourceTable.Name%>').dialog('close');
+            } else {
+                $.messager.show({
+                    title: '消息',
+                    msg: '失败',
+                    showType: 'show'
+                });
+            }
+        }
+    });
+}
+function Edit_Cell_<%=this.SourceTable.Name%>(row) {
+    var j = {<%foreach(ColumnSchema col in SourceTable.Columns){ %>        
+            '<%=col.Name%>':row.<%=col.Name%><% if(SourceTable.Columns.IndexOf(col) < SourceTable.Columns.Count - 1){%>,<% } %><% } %>        
+    };
+    $.ajax({
+        type: 'post',
+        url: '/api/<%=this.SourceTable.Name%>/PostEdit',
+        data: JSON.stringify(j),
+        dataType: 'json',
+        contentType: 'application/json',
+        success: function (data) {
+            if (data > 0) {
+                $.messager.show({
+                    title: '消息',
+                    msg: '成功',
+                    showType: 'show'
+                });                
+            } else {
+                $.messager.show({
+                    title: '消息',
+                    msg: '失败',
+                    showType: 'show'
+                });
+            }
+        }
+    });
+}
+function Delete_<%=this.SourceTable.Name%>(row) {
+    var j = {<%foreach(ColumnSchema col in SourceTable.PrimaryKey.MemberColumns){ %>        
+            '<%=col.Name%>':row.<%=col.Name%><% if(SourceTable.PrimaryKey.MemberColumns.IndexOf(col.Name) < SourceTable.PrimaryKey.MemberColumns.Count - 1){%>,<% } %><% } %>        
+    };    
+    $.ajax({
+        type: 'post',
+        url: '/api/<%=this.SourceTable.Name%>/PostDelete',
+        data: JSON.stringify(j),
+        dataType: 'json',
+        contentType: 'application/json',
+        success: function (data) {
+            if (data > 0) {
+                $.messager.show({
+                    title: '消息',
+                    msg: '成功',
+                    showType: 'show'
+                });
+                Init_Table_<%=this.SourceTable.Name%>_();
+                //Init_Table_<%=this.SourceTable.Name%>(1,pageSize);
+            } else if (data == 0) {
+                $.messager.show({
+                    title: '消息',
+                    msg: '失败',
+                    showType: 'show'
+                });
+            }
+        }
+    });
+}
+
+<%--$.ajax({
+    type: 'get',
+    url: '/api/EQUIPMENT_TYPE_LIST/GetDataByFactoryId?FACTORY_ID=' + factoryId + "&queryStr= AND VALID_FLAG = '1'",
+    async: false,
+    success: function (data) {
+        $('#EQUIPMENT_TYPE_ID_EQUIP_CLASS_INFO').combobox({
+            //panelHeight: 200,
+            valueField: 'EQUIPMENT_TYPE_ID',
+            textField: 'EQUIPMENT_TYPE_DESC',
+            multiple: false,
+            editable: false,
+            data: data,
+            onSelect: function (record) {
+            }
+        });
+    }
+});--%>
+
+<%--$.ajax({
+    type: 'get',
+    url: '/api/EQUIPMENT_CLASS_PROC_INFO/GetDataByProcessIdAndTypeId',
+    data: j,
+    dataType: 'json',
+    success: function (data) {
+        $('#EQUIPMENT_CLASS_ID_EQUIP_INFO').combogrid({
+            idField: 'EQUIPMENT_CLASS_ID',
+            textField: 'EQUIPMENT_CLASS_DESC',
+            multiple: false,
+            method: 'get',
+            panelWidth: 400,
+            panelHeight: 250,
+            columns: [[
+                { field: 'EQUIPMENT_CLASS_ID', title: '类型', width: 100 },
+                { field: 'EQUIPMENT_CLASS_NAME', title: '英文名', width: 130 },
+                { field: 'EQUIPMENT_CLASS_DESC', title: '中文名', width: 150 }
+            ]],
+            onClickRow: function (rowIndex, rowData) {
+            }
+        });
+        $('#EQUIPMENT_CLASS_ID_EQUIP_INFO').combogrid('grid').datagrid('loadData', data);
+    }
+});--%>

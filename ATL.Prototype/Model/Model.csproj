@@ -1,0 +1,113 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{EC2A7098-9652-4D90-A25F-405502EB41FC}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Model</RootNamespace>
+    <AssemblyName>Model</AssemblyName>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="BaseInfo\APPROVE_FLOW_LIST_Entity.cs" />
+    <Compile Include="BaseInfo\CUSTOMER_CODE_LIST_Entity.cs" />
+    <Compile Include="BaseInfo\EQUIPMENT_CLASS_LIST_Entity.cs" />
+    <Compile Include="BaseInfo\EQUIPMENT_CLASS_PARAM_INFO_Entity.cs" />
+    <Compile Include="BaseInfo\EQUIPMENT_CLASS_PROC_INFO_Entity.cs" />
+    <Compile Include="BaseInfo\EQUIPMENT_LIST_Entity.cs" />
+    <Compile Include="BaseInfo\EQUIPMENT_PARAM_INFO_Entity.cs" />
+    <Compile Include="BaseInfo\EQUIPMENT_PROC_INFO_Entity.cs" />
+    <Compile Include="BaseInfo\EQUIPMENT_TYPE_LIST_Entity.cs" />
+    <Compile Include="BaseInfo\FACTORY_LIST_Entity.cs" />
+    <Compile Include="BaseInfo\ILLUSTRATION_LIST_Entity.cs" />
+    <Compile Include="BaseInfo\ILLUSTRATION_PARAM_INFO_Entity.cs" />
+    <Compile Include="BaseInfo\MATERIAL_CATEGORY_LIST_Entity.cs" />
+    <Compile Include="BaseInfo\MATERIAL_PARA_INFO_Entity.cs" />
+    <Compile Include="BaseInfo\MATERIAL_PN_LIST_Entity.cs" />
+    <Compile Include="BaseInfo\MATERIAL_PN_PARA_INFO_Entity.cs" />
+    <Compile Include="BaseInfo\MATERIAL_TYPE_GRP_Entity.cs" />
+    <Compile Include="BaseInfo\MATERIAL_TYPE_GRP_LIST_Entity.cs" />
+    <Compile Include="BaseInfo\MATERIAL_TYPE_LIST_Entity.cs" />
+    <Compile Include="BaseInfo\PARAMETER_LIST_Entity.cs" />
+    <Compile Include="BaseInfo\PARAM_TYPE_LIST_Entity.cs" />
+    <Compile Include="BaseInfo\PROCESS_GROUP_LIST_Entity.cs" />
+    <Compile Include="BaseInfo\PROCESS_LIST_Entity.cs" />
+    <Compile Include="BaseInfo\PROCESS_MATERIAL_INFO_Entity.cs" />
+    <Compile Include="BaseInfo\PROCESS_MATERIAL_PN_INFO_Entity.cs" />
+    <Compile Include="BaseInfo\PROCESS_PARAM_INFO_Entity.cs" />
+    <Compile Include="BaseInfo\PRODUCT_MODEL_LIST_Entity.cs" />
+    <Compile Include="BaseInfo\PRODUCT_PROC_TYPE_LIST_Entity.cs" />
+    <Compile Include="BaseInfo\PRODUCT_TYPE_LIST_Entity.cs" />
+    <Compile Include="BaseInfo\PROJ_CODE_LIST_Entity.cs" />
+    <Compile Include="BaseInfo\RECIPE_LIST_Entity.cs" />
+    <Compile Include="BaseInfo\RECIPE_TYPE_LIST_Entity.cs" />
+    <Compile Include="Package\PACKAGE_BASE_INFO_Entity.cs" />
+    <Compile Include="Package\PACKAGE_BOM_SPEC_INFO_Entity.cs" />
+    <Compile Include="Package\PACKAGE_DESIGN_INFO_Entity.cs" />
+    <Compile Include="Package\PACKAGE_FLOW_INFO_Entity.cs" />
+    <Compile Include="Package\PACKAGE_GROUPS_Entity.cs" />
+    <Compile Include="Package\PACKAGE_ILLUSTRATION_INFO_Entity.cs" />
+    <Compile Include="Package\PACKAGE_PARAM_SETTING_Entity.cs" />
+    <Compile Include="Package\PACKAGE_PARAM_SPEC_INFO_Entity.cs" />
+    <Compile Include="Package\PACKAGE_PROC_EQUIP_CLASS_INFO_Entity.cs" />
+    <Compile Include="Package\PACKAGE_PROC_EQUIP_INFO_Entity.cs" />
+    <Compile Include="Package\PACKAGE_PROC_GRP_Entity.cs" />
+    <Compile Include="Package\PACKAGE_PROC_GRP_LIST_Entity.cs" />
+    <Compile Include="Package\PACKAGE_PROC_MATERIAL_INFO_Entity.cs" />
+    <Compile Include="Package\PACKAGE_PROC_PN_INFO_Entity.cs" />
+    <Compile Include="Package\PACKAGE_TYPE_LIST_Entity.cs" />
+    <Compile Include="Package\PACKAGE_WF_STEP_AUDITOR_Entity.cs" />
+    <Compile Include="Package\PACKAGE_WF_STEP_Entity.cs" />
+    <Compile Include="Package\Preview.cs" />
+    <Compile Include="Settings\DepartmentEntity.cs" />
+    <Compile Include="Settings\MenuEntity.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Settings\PMES_TASK_LIST_Entity.cs" />
+    <Compile Include="Settings\PMES_USER_GROUP_INFO_Entity.cs" />
+    <Compile Include="Settings\PMES_USER_GROUP_LIST_Entity.cs" />
+    <Compile Include="Settings\PMES_USER_GRP_TASK_INFO_Entity.cs" />
+    <Compile Include="Settings\PMES_USER_TASK_INFO_Entity.cs" />
+    <Compile Include="Settings\UsersEntity.cs" />
+    <Compile Include="Settings\WF_SET_Entity.cs" />
+    <Compile Include="Settings\WF_SET_STEP_Entity.cs" />
+  </ItemGroup>
+  <ItemGroup />
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

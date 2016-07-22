@@ -1,0 +1,73 @@
+﻿<%@ Template Language="C#" TargetLanguage="C#"  ResponseEncoding="UTF-8" %>
+<%-- 加载访问数据库的组件SchemaExplorer,并声明其使用的命名空间 --%>
+<%@ Assembly Name="SchemaExplorer"%>
+<%@ Import Namespace="SchemaExplorer"%>
+
+<%@ Property Type="SchemaExplorer.TableSchema" Name="SourceTable" DeepLoad="True" Optional="False" Category="表" Description="" %>
+
+<%@ Property Name="NameSpace" Type="System.String" Default="" Optional="False" Category="命名空间" Description="" OnChanged="" Editor="" EditorBase="" Serializer="" %>
+
+namespace Model.<%=this.NameSpace%>
+{
+    public class <%=this.GetClassName()%>
+    {
+        public decimal TOTAL { get; set; }
+        <%foreach(ColumnSchema col in SourceTable.Columns){ %>
+        <%if(col.Description!=""){ %>
+        /// <summary>
+        /// <%=col.Description %>
+        /// </summary>
+        <% }%>
+        public <%= this.GetCSharpVariableType(col) %> <%=col.Name %> { get;set; }
+        <% } %>
+    }
+}
+<script runat="template">
+#region 获取实体类类名
+public string GetClassName()
+{ 
+ return this.SourceTable.Name+"_Entity";
+}
+#endregion
+
+#region 获取列的数据类型
+public string GetCSharpVariableType(ColumnSchema column)
+{
+ if (column.Name.EndsWith("TypeCode")) return column.Name;
+ 
+ switch (column.DataType)
+ {
+  case DbType.AnsiString: return "string";
+  case DbType.AnsiStringFixedLength: return "string";
+  case DbType.Binary: return "byte[]";
+  case DbType.Boolean: return "bool";
+  case DbType.Byte: return "byte";
+  case DbType.Currency: return "decimal";
+  //case DbType.Date: return "DateTime";
+  //case DbType.DateTime: return "DateTime";
+  case DbType.Date: return "string";
+  case DbType.DateTime: return "string";
+  case DbType.Decimal: return "decimal";
+  case DbType.Double: return "double";
+  case DbType.Guid: return "Guid";
+  case DbType.Int16: return "short";
+  case DbType.Int32: return "int";
+  case DbType.Int64: return "long";
+  case DbType.Object: return "object";
+  case DbType.SByte: return "sbyte";
+  case DbType.Single: return "float";
+  case DbType.String: return "string";
+  case DbType.StringFixedLength: return "string";
+  case DbType.Time: return "TimeSpan";
+  case DbType.UInt16: return "ushort";
+  case DbType.UInt32: return "uint";
+  case DbType.UInt64: return "ulong";
+  case DbType.VarNumeric: return "decimal";
+  default:
+  {
+   return "__UNKNOWN__" + column.NativeType;
+  }
+ }
+}
+#endregion
+</script>

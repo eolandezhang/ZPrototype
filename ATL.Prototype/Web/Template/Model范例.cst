@@ -1,0 +1,165 @@
+﻿<%--
+Name:实体类
+Author: 
+Description:
+--%>
+<%@ CodeTemplate Language="C#" TargetLanguage="C#" Src="" Inherits="" Debug="False" Description="Template description here." ResponseEncoding="UTF-8" %>
+<%@ Property Name="SourceTable" Type="SchemaExplorer.TableSchema" Default="" Optional="False" Category="Table" Description="源表名" OnChanged="" Editor="" EditorBase="" Serializer="" %>
+<%@ Property Name="NameSpace" Type="System.String" Default="DAL" Optional="False" Category="NameSpace" Description="命名空间" OnChanged="" Editor="" EditorBase="" Serializer="" %>
+<%@ Property Name="IsFK" Type="System.Boolean" Default="False" Optional="False" Category="Other" Description="是否处理外键" OnChanged="" Editor="" EditorBase="" Serializer="" %>
+<%@ Property Name="Author" Type="System.String" Default="" Optional="False" Category="Other" Description="" OnChanged="" Editor="" EditorBase="" Serializer="" %>
+<%@ Assembly Name="SchemaExplorer" %>
+<%@ Assembly Name="System.Data" %>
+<%@ Assembly Name="mscorlib" %>
+<%@ Import Namespace="SchemaExplorer" %>
+<%@ Import Namespace="System.Data" %>
+<%@ Import Namespace="System.Collections.Generic" %>
+using System;
+using System.Collections.Generic;
+using System.Text;
+namespace <%=this.NameSpace%>
+{
+ /// <summary>
+ /// 实体类<%=this.GetClassName()%>
+ /// </summary>
+ public class <%=this.GetClassName()%>
+ {
+  #region 私有字段
+  <%foreach(ColumnSchema column in this.SourceTable.ForeignKeyColumns){%>
+  <%if(!IsFK){%>
+  private <%=this.GetCSharpVariableType(column)%> _<%=this.ToCamel(column.Name)%>;
+  <%}else{%>
+  private <%=this.GetFKClassName(column)%> _<%=this.ToCamel(column.Name)%>;
+  <%}%>
+  <%}%>
+  <%foreach(ColumnSchema column in this.SourceTable.NonForeignKeyColumns){%>
+  private <%=this.GetCSharpVariableType(column)%> _<%=this.ToCamel(column.Name)%>;
+  <%}%>
+  #endregion
+  
+  #region 公开属性
+  <%foreach(ColumnSchema column in this.SourceTable.ForeignKeyColumns){%>
+  <%if(!IsFK){%>
+  public <%=this.GetCSharpVariableType(column)%> <%=this.ToPascal(column.Name)%>
+  {
+   get{return _<%=this.ToCamel(column.Name)%>;}
+   set{_<%=this.ToCamel(column.Name)%>=value;}
+  }
+  <%}else{%>
+  public <%=this.GetFKClassName(column)%> <%=this.ToPascal(column.Name)%>
+  {
+   get{return _<%=this.ToCamel(column.Name)%>;}
+   set{_<%=this.ToCamel(column.Name)%>=value;}
+  }
+  <%}%>
+  <%}%>
+  <%foreach(ColumnSchema column in this.SourceTable.NonForeignKeyColumns){%>
+  public <%=this.GetCSharpVariableType(column)%> <%=this.ToPascal(column.Name)%>
+  {
+   get{return _<%=this.ToCamel(column.Name)%>;}
+   set{_<%=this.ToCamel(column.Name)%>=value;}
+  }
+  <%}%>
+  #endregion
+ }
+}
+<script runat="template">
+#region Pascal命名法
+public string ToPascal(string s)
+{
+ return s.Substring(0,1).ToUpper()+s.Substring(1);
+}
+#endregion
+#region 骆驼命名法
+public string ToCamel(string s)
+{
+ return s.Substring(0,1).ToLower()+s.Substring(1);
+}
+#endregion
+#region 获取实体类类名
+public string GetClassName()
+{
+ string s=this.SourceTable.Name;
+ if(s.EndsWith("s"))
+ {
+  s=s.Substring(0,s.Length-1);
+ }
+ return this.ToPascal(s);
+}
+public string GetClassName(TableSchema table)
+{
+ string s=table.Name;
+ if(s.EndsWith("s"))
+ {
+  s=s.Substring(0,s.Length-1);
+ }
+ return this.ToPascal(s);
+}
+#endregion
+#region 获取实体对象名
+public string GetObjectName()
+{
+ return this.ToCamel(this.GetClassName());
+}
+#endregion
+#region 获取文件名
+public override string GetFileName()
+{
+ return this.GetClassName()+".cs";
+}
+#endregion
+#region 获取列的数据类型
+public string GetCSharpVariableType(ColumnSchema column)
+{
+ if (column.Name.EndsWith("TypeCode")) return column.Name;
+ 
+ switch (column.DataType)
+ {
+  case DbType.AnsiString: return "string";
+  case DbType.AnsiStringFixedLength: return "string";
+  case DbType.Binary: return "byte[]";
+  case DbType.Boolean: return "bool";
+  case DbType.Byte: return "byte";
+  case DbType.Currency: return "decimal";
+  case DbType.Date: return "DateTime";
+  case DbType.DateTime: return "DateTime";
+  case DbType.Decimal: return "decimal";
+  case DbType.Double: return "double";
+  case DbType.Guid: return "Guid";
+  case DbType.Int16: return "short";
+  case DbType.Int32: return "int";
+  case DbType.Int64: return "long";
+  case DbType.Object: return "object";
+  case DbType.SByte: return "sbyte";
+  case DbType.Single: return "float";
+  case DbType.String: return "string";
+  case DbType.StringFixedLength: return "string";
+  case DbType.Time: return "TimeSpan";
+  case DbType.UInt16: return "ushort";
+  case DbType.UInt32: return "uint";
+  case DbType.UInt64: return "ulong";
+  case DbType.VarNumeric: return "decimal";
+  default:
+  {
+   return "__UNKNOWN__" + column.NativeType;
+  }
+ }
+}
+#endregion
+#region 获取外键类名
+public string GetFKClassName(ColumnSchema column)
+{
+ foreach(TableKeySchema key in this.SourceTable.ForeignKeys)
+ {
+  foreach(MemberColumnSchema fk in key.ForeignKeyMemberColumns)
+  {
+   if(fk.Name==column.Name)
+   {
+    return this.GetClassName(key.PrimaryKeyTable);
+   }
+  }
+ }
+ return "";
+}
+#endregion
+</script>

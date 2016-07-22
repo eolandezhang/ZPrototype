@@ -1,0 +1,64 @@
+﻿using Model.Package;
+using BLL.Package;
+using System.Collections.Generic;
+using System.Web.Http;
+namespace Service.Package
+{
+    public class PACKAGE_PROC_EQUIP_CLASS_INFOController : ApiController
+    {
+        BLL.Package.PACKAGE_PROC_EQUIP_CLASS_INFO _PACKAGE_PROC_EQUIP_CLASS_INFO = new BLL.Package.PACKAGE_PROC_EQUIP_CLASS_INFO();
+        #region 查询
+
+        public List<PACKAGE_PROC_EQUIP_CLASS_INFO_Entity> GetData()
+        {
+            return _PACKAGE_PROC_EQUIP_CLASS_INFO.GetData();
+        }
+
+        public List<PACKAGE_PROC_EQUIP_CLASS_INFO_Entity> GetDataPage(decimal pageSize, decimal pageNumber)
+        {
+            return _PACKAGE_PROC_EQUIP_CLASS_INFO.GetData(pageSize, pageNumber);
+        }
+
+        public List<PACKAGE_PROC_EQUIP_CLASS_INFO_Entity> GetDataByProcessIdAndGroupNo(string PACKAGE_NO, string GROUP_NO, string VERSION_NO, string PROCESS_ID, string FACTORY_ID, string queryStr)
+        {
+            return _PACKAGE_PROC_EQUIP_CLASS_INFO.GetDataByProcessIdAndGroupNo(PACKAGE_NO, GROUP_NO, VERSION_NO, PROCESS_ID, FACTORY_ID, queryStr);
+        }
+
+        public List<PACKAGE_PROC_EQUIP_CLASS_INFO_Entity> GetDataByProcessIdAndGroupNoAndTypeId(string PACKAGE_NO, string GROUP_NO, string VERSION_NO, string PROCESS_ID, string FACTORY_ID, string EQUIPMENT_TYPE_ID, string queryStr)
+        {
+            return _PACKAGE_PROC_EQUIP_CLASS_INFO.GetDataByProcessIdAndGroupNoAndTypeId(PACKAGE_NO, GROUP_NO, VERSION_NO, PROCESS_ID, FACTORY_ID, EQUIPMENT_TYPE_ID, queryStr);
+        }
+
+        #endregion
+
+        #region 新增
+
+        public int PostAdd(PACKAGE_PROC_EQUIP_CLASS_INFO_Entity entity)
+        {
+            return _PACKAGE_PROC_EQUIP_CLASS_INFO.PostAdd(entity);
+        }
+
+        #endregion
+
+        #region 修改
+
+        public int PostEdit(PACKAGE_PROC_EQUIP_CLASS_INFO_Entity entity)
+        {
+            return _PACKAGE_PROC_EQUIP_CLASS_INFO.PostEdit(entity);
+        }
+
+        #endregion
+
+        #region 删除
+
+        public int PostDelete(PACKAGE_PROC_EQUIP_CLASS_INFO_Entity entity)
+        {
+            return _PACKAGE_PROC_EQUIP_CLASS_INFO.PostDelete(entity);
+        }
+
+        #endregion
+
+
+
+    }
+}
